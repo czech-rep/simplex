@@ -11,7 +11,7 @@ class Simp():
         self.a = a.astype('float64')     # our np.array = simplex table
         self.num_vars = len(expr)      # number of original variables
         self.base = list(range(self.num_vars, a.shape[1]-1))                # numbers of additional variables = in base
-        print(self.base)
+        # print(self.base)
         self._objective = expr + [0] * len(self.base)  # [x1, x2, .., 0, 0, ..] array of coeficients from objective
 
     def get_coefs(self):
@@ -45,7 +45,7 @@ class Simp():
         if all are equal or less than zero, end operation
         W  przypadku  maksymalizacji  funkcji  celu  do  kolejnego  rozwiązania  bazowego  wchodzi  zmienna  o największej wartości kryterium simpleks (czyli największej wartości w tzw. wierszu zerowym )
         '''
-        print(profits)
+        # print(profits)
         max_idx = np.argmax(profits)
         return max_idx if profits[max_idx] > 0 else None
 
@@ -62,7 +62,7 @@ class Simp():
         with np.errstate(divide='ignore'):      # ignore warning (divide by zero may occur)
             vec = np.divide( resource, column )
             # vec[ vec==np.inf ] = np.nan         # inf convert to np.nan
-        print(vec)
+        # print(vec)
         try:
             res = np.nanargmin(np.where(vec > 0, vec, np.nan)) # minimum, from non np.nan
         except ValueError:
@@ -106,15 +106,15 @@ class Simp():
         '''
         iterations = 1
         if show:
-            print('expression: ', self._objective)
-            print('at start: ', np.array_str(self.a, precision=3))
-
+            print('expression to maximize: ', self._objective)
+            print('starting optimization of simplex matrix: ')
+            print(np.array_str(self.a, precision=3))
         
         while True:
 
             rel_profits = self.get_rel_profits()
             new_base = self.compare_profits(rel_profits) # var that enters base - column
-            print('compare_profits: ', new_base)
+            # print('compare_profits: ', new_base)
 
             if new_base is None:
                 # means no need for forther optimization
@@ -124,26 +124,27 @@ class Simp():
             if to_replace is None:
                 # means no need for forther optimization
                 break
-            
+
             self.base[to_replace] = new_base
             self.a = self.rebuild_matrix(to_replace, new_base) # matrix rebuild
 
             if show:
                 np.set_printoptions(precision=2, )
                 print(f'''
-iteration {iterations}
+ - - iteration {iterations} - -
 {new_base} enters base at row {to_replace}
 {self.a}
-current max: {self.current_maximum()}
-                ''')
+current value:      {self.current_maximum()} ''')
             
             iterations += 1
             if iterations > 9999:
                 break
                 
         if show:
-            print('optimization end')
-            print('result: ', self.get_result())
-            print('maximum value: ', self.current_maximum())
+            print('')
+            print(' - - optimization ended - -')
+            print('result:          ', self.get_result())
+            print('maximum value:    ', self.current_maximum())
+            print('')
 
         return self.get_result(), self.current_maximum()
